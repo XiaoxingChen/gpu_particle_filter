@@ -1,10 +1,3 @@
-<head>
-    <style>
-        .bib ol { counter-reset: item }
-        .bib li { display: block ; counter-increment: item; }
-        .bib li:before { content: " ["counter(item)"] "; }
-    </style>
-</head>
 <body>
 <h1>Particle Filter Localization with GPU</h1>
 <p>
@@ -13,7 +6,13 @@ Want to use GPU to parallelize your program on your laptop or mobile phone? CUDA
 <h1>Examples</h1>
 <h2>Unstable Localization</h2>
 <div style="vertical-align:middle; text-align:center">
-        <img src="./img/simulation_ice_world.gif" alt="em" align="center">
+        <img src="./img/simulation_ice_world.gif" alt="em" align="center" width="70%">
+</div>
+
+<h2>Stable Localization</h2>
+<p>A better group of parameters yield better performance.</p>
+<div style="vertical-align:middle; text-align:center">
+        <img src="./img/simulation_ice_world_1.gif" alt="em" align="center" width="70%">
 </div>
 
 <h1>How to Run</h1>
@@ -53,6 +52,7 @@ Currently not available for OpenCL. Please give up.
 ```
 python3 demo/ice_world.py
 ```
+<p><a href="https://steamcommunity.com/sharedfiles/filedetails/?id=258081127">Why is ice world?</a></p>
 <h1>Tested Platforms</h1>
 <ul>
 <li>Intel UHD Graphics 620 (rev 07), Ubuntu 18.04</li>
