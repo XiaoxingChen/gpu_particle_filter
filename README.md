@@ -55,7 +55,9 @@ python3 demo/ice_world.py
 <p><a href="https://steamcommunity.com/sharedfiles/filedetails/?id=258081127">Why is ice world?</a></p>
 <h1>Tested Platforms</h1>
 <ul>
-<li>Intel UHD Graphics 620 (rev 07), Ubuntu 18.04</li>
+<li>Intel UHD Graphics 620 (rev 07), Ubuntu 18.04 [pass]</li>
+<li>Intel HD Graphics 5500 (rev 09), Ubuntu 18.04 [freeze sometimes]</li>
+<li>NVIDIA GF119 [NVS 315] (rev a1), Ubuntu 18.04 [pass]</li>
 </ul>
 
 
