@@ -133,7 +133,6 @@ class Lidar2DParticleFilter(object):
 
         best_likelihood = max(log_likelihood)
         print("best_likelihood: {}".format(best_likelihood))
-        # shrink_coeff = 1e-3 if best_likelihood > 0. else np.abs(best_likelihood) * 5e-3
         # print("post process cost: {}".format(time.time() - t0))        
 
         n_eff = 1./self.weights.dot(self.weights)
