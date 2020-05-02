@@ -29,7 +29,8 @@ def loadPolygonMap(filename, map_name):
 
 
 class PolygonMap(object):
-    def __init__(self, filename, map_name):
+    def __init__(self, map_name):
+        filename = os.path.dirname(os.path.abspath(__file__)) + '/map_lib.yaml'
         self.segments = loadPolygonMap(filename, map_name)
         rkt = CLRocket.ins()
         self.seg_num = len(self.segments)

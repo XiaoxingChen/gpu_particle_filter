@@ -61,7 +61,7 @@ def resample(ps, rs, weights, particle_num):
     if len(indices) != particle_num:
         raise ValueError("len(indices) != particle_num")
     
-    print(list(dict.fromkeys(indices)))
+    print("preserved particle: {}".format(list(dict.fromkeys(indices))))
     r_quat = rs.as_quat()
     
 
@@ -70,7 +70,7 @@ def resample(ps, rs, weights, particle_num):
 
 
 class Lidar2DParticleFilter(object):
-    def __init__(self, poly_map, particle_num=1024, lidar_info=LidarInfo()):
+    def __init__(self, poly_map, particle_num=1024, lidar_info=LidarInfo(), p_cov=0.5, r_cov=0.1):
         
         self.particle_num = particle_num
         self.lidar_info = lidar_info
@@ -82,6 +82,8 @@ class Lidar2DParticleFilter(object):
         self.weights = np.ones(self.particle_num) / self.particle_num
 
         self.ps_viz = self.ps
+        self.p_cov = np.identity(2) * p_cov
+        self.r_cov = np.identity(1) * r_cov
 
 
     def setParticleState(self, ps, rs):
@@ -98,9 +100,9 @@ class Lidar2DParticleFilter(object):
         self.rs = r_inc * self.rs
         
         # sample particles
-        self.ps += np.random.multivariate_normal([0, 0], np.identity(2) * 0.5, self.particle_num)
+        self.ps += np.random.multivariate_normal([0, 0], self.p_cov, self.particle_num)
         noise_rotvec = np.zeros([self.particle_num, 3])
-        noise_rotvec[:, -1:] = np.random.multivariate_normal([0], np.identity(1) * 0.1 , self.particle_num)
+        noise_rotvec[:, -1:] = np.random.multivariate_normal([0], self.r_cov , self.particle_num)
         self.rs = R.from_rotvec(noise_rotvec) * self.rs
 
         self.ps_viz = self.ps

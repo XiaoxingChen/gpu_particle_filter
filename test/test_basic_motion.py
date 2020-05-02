@@ -18,7 +18,7 @@ if __name__ == "__main__":
     matplotlib.use('TkAgg')
 
     map_lib = os.path.dirname(os.path.abspath(__file__)) + '/../map_lib.yaml'
-    poly_map = PolygonMap(map_lib, map_name)
+    poly_map = PolygonMap(map_name)
     lidar_info = LidarInfo(resolution=32, distance=50, std_dev=1e-1, fov=[-0.5, 0.5])
     pf = Lidar2DParticleFilter(poly_map, particle_num=512, lidar_info=lidar_info)
     

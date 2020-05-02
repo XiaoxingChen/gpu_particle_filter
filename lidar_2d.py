@@ -25,7 +25,7 @@ def createLidarSegments(lidar_ps, lidar_rs, lidar_info, distance=None):
     """
     Parameters
     ----------
-    lidar_ps : array_like, shape (N,2) or (N,3)
+    lidar_ps : array_like, shape (N,2) or (N,3) 
     lidar_rs : `Rotation` instance
         must contain N instances
     lidar_info : `LidarInfo` instance
@@ -65,6 +65,10 @@ def Lidar2DMeasure(lidar_ps, lidar_rs, lidar_info, poly_map):
     -------
     dist: cl_array, shape (lidar_num * lidar_resolution), can be reshaped to (lidar_num, lidar_resolution)
     """
+    if lidar_ps.shape == (2,) or lidar_ps.shape == (3,):
+        lidar_ps = np.array([lidar_ps])
+    if len(lidar_rs.as_quat().shape) == 1:
+        lidar_rs = R.from_quat([lidar_rs.as_quat()])
     rkt = CLRocket.ins()
 
     

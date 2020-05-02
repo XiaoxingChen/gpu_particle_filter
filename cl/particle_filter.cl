@@ -1,25 +1,6 @@
 #pragma OPENCL EXTENSION cl_khr_fp64 : enable
 #pragma OPENCL EXTENSION cl_khr_int64_base_atomics : enable
 
-__kernel void checkIntersectionality(__global double4* src_segments, __global double4* dst_segments, __global uchar* out)
-{
-    int i = get_global_id(0);
-    int j = get_global_id(1);
-    int stride = get_global_size(1);
-
-    double4 s0d0 = (double4)(dst_segments[j].xy - src_segments[i].xy, 0, 0);
-    double4 s0d1 = (double4)(dst_segments[j].zw - src_segments[i].xy, 0, 0);
-    double4 s0s1 = (double4)(src_segments[i].zw - src_segments[i].xy, 0, 0);
-    double4 d0s1 = (double4)(src_segments[i].zw - dst_segments[j].xy, 0, 0);
-    double4 d0d1 = (double4)(dst_segments[j].zw - dst_segments[j].xy, 0, 0);
-
-    double4 d0s0 = -s0d0;
-    // result[i,j] = (np.cross(s0d0, s0s1).dot(np.cross(s0s1, s0d1)) > 0) and (np.cross(d0s0, d0d1).dot(np.cross(d0d1, d0s1)) > 0)
-    uchar cond_0 = dot(cross(s0d0, s0s1), cross(s0s1, s0d1)) > 0;
-    uchar cond_1 = dot(cross(d0s0, d0d1), cross(d0d1, d0s1)) > 0;
-    out[i * stride + j] = (cond_0 && cond_1);
-}
-
 __kernel void findIntersected(
     __global double4* src_segments,
     __global double4* dst_segments,
