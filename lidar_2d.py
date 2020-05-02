@@ -95,6 +95,29 @@ def Lidar2DMeasure(lidar_ps, lidar_rs, lidar_info, poly_map):
     
     return distance_dev
 
+def lidar2DLikelihood(dev_measure_real, dev_measure_samples, lidar_info, sample_num):
+    """
+    ---------
+    output:
+    self.log_likelihood_dev: 1D array, shape (sample_num, )
+    """
+    rkt = CLRocket.ins()
+    beam_num = sample_num * lidar_info.resolution
+    beam_likelihood_dev = cl_array.zeros(rkt.queue, (beam_num, ), np.float64)
+    log_likelihood_dev = cl_array.zeros(rkt.queue, (sample_num, ), np.float64)
+
+    rkt.prg['particle_filter'].BatchLidarLogLikeliHood( \
+        rkt.queue, (lidar_info.resolution,), None, \
+        dev_measure_real.data, dev_measure_samples.data, \
+        np.float64(lidar_info.std_dev), np.float64(lidar_info.distance), np.uint32(sample_num), \
+        beam_likelihood_dev.data)
+    
+    rkt.prg['particle_filter'].reduceSumRowF64( \
+        rkt.queue, (rkt.max_work_group, sample_num), (rkt.max_work_group, 1), \
+        beam_likelihood_dev.data, log_likelihood_dev.data, np.uint32(lidar_info.resolution))
+
+    return log_likelihood_dev
+
 if __name__ == "__main__":
     map_lib = os.path.dirname(os.path.abspath(__file__)) + '/map_lib.yaml'
     poly_map = PolygonMap(map_lib, 'basic')
