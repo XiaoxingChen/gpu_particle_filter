@@ -2,6 +2,7 @@ from scipy.spatial.transform import Rotation as R
 import numpy as np
 from lidar_2d import lidar2DLikelihood, Lidar2DMeasure, LidarInfo
 import time
+import logging
 
 def _assert_position_size(ps, particle_num):
     if len(ps) != particle_num:
@@ -41,7 +42,7 @@ def resample(ps, rs, weights, particle_num):
     This function return ps, rs, weights
     """
 
-    print("do resample!")
+    logging.info("do resample!")
 
     _assert_position_size(ps, particle_num)
     _assert_rotation_size(rs, particle_num)
@@ -61,7 +62,7 @@ def resample(ps, rs, weights, particle_num):
     if len(indices) != particle_num:
         raise ValueError("len(indices) != particle_num")
     
-    print("preserved particle: {}".format(list(dict.fromkeys(indices))))
+    logging.info("preserved particle: {}".format(list(dict.fromkeys(indices))))
     r_quat = rs.as_quat()
     
 
@@ -70,7 +71,7 @@ def resample(ps, rs, weights, particle_num):
 
 
 class Lidar2DParticleFilter(object):
-    def __init__(self, poly_map, particle_num=1024, lidar_info=LidarInfo(), p_cov=0.5, r_cov=0.1):
+    def __init__(self, poly_map, particle_num=1024, lidar_info=LidarInfo()):
         
         self.particle_num = particle_num
         self.lidar_info = lidar_info
@@ -82,8 +83,9 @@ class Lidar2DParticleFilter(object):
         self.weights = np.ones(self.particle_num) / self.particle_num
 
         self.ps_viz = self.ps
-        self.p_cov = np.identity(2) * p_cov
-        self.r_cov = np.identity(1) * r_cov
+
+        self.est_cov_p = np.identity(2) *1e-1
+        self.est_cov_r = np.identity(1) *1e-1
 
 
     def setParticleState(self, ps, rs):
@@ -93,6 +95,11 @@ class Lidar2DParticleFilter(object):
         self.rs = rs
         self.ps_viz = self.ps
 
+    def positionViz(self, scale=10.):
+        zero_mean = self.ps_viz - self.est_p
+        zero_mean *= scale
+        return (zero_mean + self.est_p)
+
     def update(self, dev_measure_real, p_inc, r_inc):
 
         # update particles
@@ -100,9 +107,9 @@ class Lidar2DParticleFilter(object):
         self.rs = r_inc * self.rs
         
         # sample particles
-        self.ps += np.random.multivariate_normal([0, 0], self.p_cov, self.particle_num)
+        self.ps += np.random.multivariate_normal([0, 0], self.est_cov_p * 1e1, self.particle_num)
         noise_rotvec = np.zeros([self.particle_num, 3])
-        noise_rotvec[:, -1:] = np.random.multivariate_normal([0], self.r_cov , self.particle_num)
+        noise_rotvec[:, -1:] = np.random.multivariate_normal([0], self.est_cov_r * 1e1 , self.particle_num)
         self.rs = R.from_rotvec(noise_rotvec) * self.rs
 
         self.ps_viz = self.ps
@@ -114,7 +121,7 @@ class Lidar2DParticleFilter(object):
         log_likelihood = log_likelihood.get()
         # print(log_likelihood)
 
-        t0 = time.time()
+        logging.info("post process")
         # update weights
         self.weights *= np.exp(log_likelihood)
         # print(self.weights)
@@ -128,11 +135,14 @@ class Lidar2DParticleFilter(object):
         res_p = self.ps - self.est_p
         res_rv = (self.rs * self.est_r.inv()).as_rotvec()
 
-        cov_p = np.dot(self.weights * res_p.T, res_p)
-        cov_r = np.dot(self.weights * res_rv.T, res_rv)[2:,2:]
+        self.est_cov_p = np.dot(self.weights * res_p.T, res_p)
+        self.est_cov_r = np.dot(self.weights * res_rv.T, res_rv)[2:,2:]
+
+        logging.info("est_cov_p: {}, est_cov_r: {}".format(self.est_cov_p, self.est_cov_r))
 
         best_likelihood = max(log_likelihood)
-        print("best_likelihood: {}".format(best_likelihood))
+        # print("best_likelihood: {}".format(best_likelihood))
+        logging.info("best_likelihood: {}".format(best_likelihood))
         # print("post process cost: {}".format(time.time() - t0))        
 
         n_eff = 1./self.weights.dot(self.weights)
@@ -142,4 +152,5 @@ class Lidar2DParticleFilter(object):
 
         t0 = time.time()
         self.ps, self.rs, self.weights = resample(self.ps, self.rs, self.weights, self.particle_num)
+        logging.info("resample finished")
         # print("resample cost: {}".format(time.time() - t0))

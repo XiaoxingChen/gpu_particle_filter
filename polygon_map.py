@@ -19,7 +19,7 @@ def polygonToLineSegments(polygons):
     for poly in polygons:
         for i in range(len(poly)):
             segments.append(np.array([poly[i-1], poly[i]]))
-    return np.array(segments)
+    return np.array(segments, dtype=np.float64)
 
 def loadPolygonMap(filename, map_name):
     f = open(filename, 'r')
