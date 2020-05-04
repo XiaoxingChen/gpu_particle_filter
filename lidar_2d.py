@@ -1,7 +1,6 @@
 import numpy as np
 import os
 from scipy.spatial.transform import Rotation as R
-from geometry import *
 from cl_rocket import CLRocket
 import pyopencl.array as cl_array
 from polygon_map import PolygonMap
@@ -20,6 +19,10 @@ class LidarInfo():
         self.distance = distance
         self.std_dev = std_dev
         self.fov = fov
+    
+    def __str__(self):
+        return "resolution: {}, distance: {}, std_dev: {}, fov: {}".format( \
+            self.resolution, self.distance, self.std_dev, self.fov)
 
 def createLidarSegments(lidar_ps, lidar_rs, lidar_info, distance=None):
     """

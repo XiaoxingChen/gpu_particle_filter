@@ -9,6 +9,7 @@ from particle_filter import Lidar2DParticleFilter
 import matplotlib
 from motion import Motion
 import logging
+from odometry_2d import Odometry2D
 
 if __name__ == "__main__":
     map_name, traj_id = 'ice_world', '0'
@@ -20,15 +21,21 @@ if __name__ == "__main__":
     matplotlib.use('TkAgg')
     poly_map = PolygonMap(map_name)
     motion = Motion('{}_{}'.format(map_name, traj_id))
+    odom = Odometry2D()
     logging.basicConfig(filename=os.path.dirname(os.path.abspath(__file__)) + '/../__pycache__/gpu_pf.log', 
         format='[%(asctime)s] - %(message)s', level=logging.INFO, filemode='w')
 
     fps = 20
-    p_observe_noise = 0.05
-    r_observe_noise = 0.05
 
-    lidar_info = LidarInfo(resolution=32, distance=20, std_dev=1e-1, fov=[-0.8, 0.8])
+    lidar_info = LidarInfo(resolution=32, distance=50, std_dev=1e-1, fov=[-0.8, 0.8])
     pf = Lidar2DParticleFilter(poly_map, particle_num=512, lidar_info=lidar_info)
+
+    logging.info(
+        """Simulator Start! 
+        Map: {}, trajectory ID: {},
+        lidar_info: {},
+        Particle num: {}
+        """.format(map_name, traj_id, lidar_info, pf.particle_num))
     
     sim_time = motion.t_range[1] - motion.t_range[0]
     ts = np.linspace(*motion.t_range, int(fps * sim_time))
@@ -50,26 +57,27 @@ if __name__ == "__main__":
             lidar_rotation = motion.spline.ang_p(t)
 
             # odometry observe
-            lidar_pts_inc  = lidar_position - motion.spline.lin_p(last_t)[:2] + (np.random.random(2)- 0.5) * p_observe_noise
-            lidar_rs_inc = R.from_rotvec([0,0, (np.random.random(1) - 0.5) * r_observe_noise]) * lidar_rotation * motion.spline.ang_p(last_t).inv()
-            last_t = t
+            odom.update(t, lidar_position, lidar_rotation)
 
             # sensor observe
+            logging.info("actual observe")
             lidar_measure = Lidar2DMeasure(lidar_position, lidar_rotation, lidar_info, poly_map)
             
-            pf.update(lidar_measure, lidar_pts_inc, lidar_rs_inc)
+            logging.info("update filter")
+            # pf.update(lidar_measure, lidar_pts_inc, lidar_rs_inc)
+            pf.update(lidar_measure, *odom.latestObservation())
             viz_measure = lidar_measure.get()
+            logging.info("read measure done")
             viz_measure[viz_measure > lidar_info.distance] = 0
             beam_viz = createLidarSegments(np.array([pf.est_p]), R.from_quat([pf.est_r.as_quat()]) , lidar_info, viz_measure)[::1]
             real_traj.append(pf.est_p)
-
             if 1:
                 plt.clf()
                 for seg in poly_map.segments:
                     plt.plot(seg[:, 0], seg[:, 1], 'k')
                 for seg in beam_viz:
                     plt.plot(seg[:, 0], seg[:, 1], 'r', lw=0.5)
-                plt.plot(lidar_position[0], lidar_position[1], 'g*', markersize=15, label='actual')
+                plt.plot(lidar_position[0], lidar_position[1], 'gx', markersize=15, label='actual')
                 plt.plot(*pf.positionViz(scale=5).T, '.', markersize=3, alpha=0.5)
                 plt.plot(*motion.spline.lin_p(ts)[:,:2].T, 'g--', label='actual')
                 plt.plot(*np.array(real_traj).T, 'C5-', label='estimated')

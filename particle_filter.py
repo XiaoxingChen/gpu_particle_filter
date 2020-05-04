@@ -101,9 +101,8 @@ class Lidar2DParticleFilter(object):
         return (zero_mean + self.est_p)
 
     def update(self, dev_measure_real, p_inc, r_inc):
-
         # update particles
-        self.ps += p_inc
+        self.ps += self.rs.apply(np.array([p_inc[0], p_inc[1], 0]))[:,:2]
         self.rs = r_inc * self.rs
         
         # sample particles
