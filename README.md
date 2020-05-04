@@ -4,15 +4,20 @@
 Want to use GPU to parallelize your program on your laptop or mobile phone? CUDA may not be available on these devices. OpenCL allows you to call GPU functions even on ARM platform. This demo shows you how to use OpenCL to accelerate a Particle Filter algorithm for robot localization.
 </p>
 <h1>Examples</h1>
-<h2>Unstable Localization</h2>
+<h2>Ice World</h2>
 <div style="vertical-align:middle; text-align:center">
-        <img src="./img/simulation_ice_world.gif" alt="em" align="center" width="70%">
+        <img src="https://user-images.githubusercontent.com/16934019/80937927-a1e1c880-8e09-11ea-99cb-6fa34e88f895.gif" alt="em" align="center" width="70%">
 </div>
 
-<h2>Stable Localization</h2>
-<p>A better group of parameters yield better performance.</p>
+<h2>Featureless Corridor</h2>
 <div style="vertical-align:middle; text-align:center">
-        <img src="./img/simulation_ice_world_1.gif" alt="em" align="center" width="70%">
+        <img src="https://user-images.githubusercontent.com/16934019/80937931-aa3a0380-8e09-11ea-9937-49a308e7e95d.gif" alt="em" align="center" width="70%">
+</div>
+
+<h2>Circular Corridor</h2>
+<p>This seems an impossible task for a localization solution without observable global pose.</p>
+<div style="vertical-align:middle; text-align:center">
+        <img src="https://user-images.githubusercontent.com/16934019/80937934-ac03c700-8e09-11ea-95ee-2300c933b5f3.gif" alt="em" align="center" width="70%">
 </div>
 
 <h1>How to Run</h1>
@@ -50,7 +55,13 @@ Currently not available for OpenCL. Please give up.
 <h2>Run Demo</h2>
 
 ```
-python3 demo/ice_world.py
+python3 demo/localization.py ice_world
+```
+```
+python3 demo/localization.py corridor
+```
+```
+python3 demo/localization.py circle_corridor
 ```
 <p><a href="https://steamcommunity.com/sharedfiles/filedetails/?id=258081127">Why is ice world?</a></p>
 <h1>Tested Platforms</h1>
