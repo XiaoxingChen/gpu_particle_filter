@@ -5,6 +5,7 @@ from cl_rocket import CLRocket
 import pyopencl.array as cl_array
 from polygon_map import PolygonMap
 import matplotlib.pyplot as plt
+import logging
 
 def _assert_pose_size(pts, rs):
     if len(rs) != len(pts):
@@ -80,6 +81,7 @@ def Lidar2DMeasure(lidar_ps, lidar_rs, lidar_info, poly_map):
     beam_seg_dev = cl_array.to_device(rkt.queue, lidar_segments)
     beam_eqt_dev = cl_array.zeros(rkt.queue, (beam_num * 4, ) , np.float64)
 
+    logging.info("lineEquationFromPointPairs")
     rkt.prg['particle_filter'].lineEquationFromPointPairs( \
         rkt.queue, (beam_num, ), None, \
         beam_seg_dev.data, beam_eqt_dev.data)
@@ -87,13 +89,14 @@ def Lidar2DMeasure(lidar_ps, lidar_rs, lidar_info, poly_map):
     idx_pair_dev = cl_array.zeros(rkt.queue, (beam_num * poly_map.seg_num // 2, 2), np.uint32)
     buff_len_dev = cl_array.zeros(rkt.queue, (1, ), np.uint32)
 
+    logging.info("findIntersected, beam_num: {}, poly_map.seg_num: {}".format(beam_num, poly_map.seg_num))
     rkt.prg['particle_filter'].findIntersected( \
         rkt.queue, (beam_num, poly_map.seg_num), None, \
         beam_seg_dev.data, poly_map.seg_dev.data, idx_pair_dev.data, buff_len_dev.data)
     intersected_num = buff_len_dev.get()[0]
 
     # -----------------------
-
+    logging.info("calculateDisance")
     init_distances = np.ones(beam_num) * (lidar_info.distance + 1.)
     distance_dev = cl_array.to_device(rkt.queue, init_distances)
     rkt.prg['particle_filter'].calculateDisance( \
@@ -113,12 +116,14 @@ def lidar2DLikelihood(dev_measure_real, dev_measure_samples, lidar_info, sample_
     beam_likelihood_dev = cl_array.zeros(rkt.queue, (beam_num, ), np.float64)
     log_likelihood_dev = cl_array.zeros(rkt.queue, (sample_num, ), np.float64)
 
+    logging.info("batch likelihood")
     rkt.prg['particle_filter'].BatchLidarLogLikeliHood( \
         rkt.queue, (lidar_info.resolution,), None, \
         dev_measure_real.data, dev_measure_samples.data, \
         np.float64(lidar_info.std_dev), np.float64(lidar_info.distance), np.uint32(sample_num), \
         beam_likelihood_dev.data)
     
+    logging.info("reduce sum")
     rkt.prg['particle_filter'].reduceSumRowF64( \
         rkt.queue, (rkt.max_work_group, sample_num), (rkt.max_work_group, 1), \
         beam_likelihood_dev.data, log_likelihood_dev.data, np.uint32(lidar_info.resolution))

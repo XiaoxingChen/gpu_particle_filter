@@ -27,6 +27,7 @@ Want to use GPU to parallelize your program on your laptop or mobile phone? CUDA
 git clone https://github.com/XiaoxingChen/gpu_particle_filter
 cd gpu_particle_filter
 pip3 install -r requirements.txt
+source setup.bash
 ```
 <h3>Intel GPU + Ubuntu 18.04</h3>
 

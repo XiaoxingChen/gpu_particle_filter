@@ -3,6 +3,7 @@ from lidar_2d import *
 from polygon_map import *
 import matplotlib.pyplot as plt
 import numpy as np
+import time
 import sys
 from scipy.spatial.transform import Rotation as R
 from particle_filter import Lidar2DParticleFilter
@@ -71,6 +72,7 @@ if __name__ == "__main__":
             viz_measure[viz_measure > lidar_info.distance] = 0
             beam_viz = createLidarSegments(np.array([pf.est_p]), R.from_quat([pf.est_r.as_quat()]) , lidar_info, viz_measure)[::1]
             real_traj.append(pf.est_p)
+            # print(time.time())
             if 1:
                 plt.clf()
                 for seg in poly_map.segments:
