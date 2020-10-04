@@ -96,10 +96,10 @@ def Lidar2DMeasure(lidar_ps, lidar_rs, lidar_info, poly_map):
     intersected_num = buff_len_dev.get()[0]
 
     # -----------------------
-    logging.info("calculateDisance")
+    logging.info("calculateDistance")
     init_distances = np.ones(beam_num) * (lidar_info.distance + 1.)
     distance_dev = cl_array.to_device(rkt.queue, init_distances)
-    rkt.prg['particle_filter'].calculateDisance( \
+    rkt.prg['particle_filter'].calculateDistance( \
         rkt.queue, (intersected_num, ), None, \
         beam_seg_dev.data, idx_pair_dev.data, beam_eqt_dev.data, poly_map.eqt_dev.data, distance_dev.data)
     

@@ -1,7 +1,7 @@
 <body>
 <h1>Particle Filter Localization with GPU</h1>
 <p>
-Want to use GPU to parallelize your program on your laptop or mobile phone? CUDA may not be available on these devices. OpenCL allows you to call GPU functions even on ARM platform. This demo shows you how to use OpenCL to accelerate a Particle Filter algorithm for robot localization.
+When considering using GPU to parallelize programs on laptop or mobile phone, CUDA may not be available on these devices. OpenCL allows one to call GPU functions even on ARM platform. This demo shows how to use OpenCL to accelerate a Particle Filter algorithm for robot localization.
 </p>
 <h1>Examples</h1>
 <h2>Ice World</h2>

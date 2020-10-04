@@ -44,7 +44,7 @@ void atomic_min_global(volatile __global double *source, const double operand) {
     } while (atom_cmpxchg((volatile global ulong *)source, prevVal.intVal, newVal.intVal) != prevVal.intVal);
 }
 
-__kernel void calculateDisance(
+__kernel void calculateDistance(
     __global double4* src_segments,
     __global int2* idx_pairs,
     __global double4* eqt_src,
